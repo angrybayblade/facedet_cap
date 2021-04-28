@@ -50,9 +50,14 @@ const Camera = (props = { image:undefined, imageState:undefined, userState:undef
           image:image,
       }
     }).then(response=>response.json()).then(data=>{
-      imageState(data.roi);
-      userState(data.user);
-      compState("dashboard");
+      if(data.user){
+        imageState(data.roi);
+        userState(data.user);
+        compState("dashboard");
+      }else{
+        imageState(data.roi);
+        compState("newuser");
+      }
     })
   }
 
@@ -277,48 +282,52 @@ const Dashboard  = (props={
           <div className="title">
             New Order
           </div>
-          <div className="items">
-            {
-              items.map((item, i)=>{
-                return (
-                  <div className="item" onClick={e=>addItem(item)} key={i}>
-                    <div className='image'>
-                      <img src={item.image} />
-                    </div>
-                    <div className="info" >
-                      <div className="name">
-                        { item.name }
+          <div className='itemscontainer'> 
+            <div className="items">
+              {
+                items.map((item, i)=>{
+                  return (
+                    <div className="item" onClick={e=>addItem(item)} key={i}>
+                      <div className='image'>
+                        <img src={item.image} />
                       </div>
-                      <div className="price">
-                        { item.price } $
+                      <div className="info" >
+                        <div className="name">
+                          { item.name }
+                        </div>
+                        <div className="price">
+                          { item.price } $
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )
-              })
-            }
+                  )
+                })
+              }
+            </div>
           </div>
-          <div className="items cart">
-          {
-              Object.keys(cart).map((item, i)=>{
-                item = cart[item];
-                return (
-                  <div className="item" key={i} >
-                    <div className='image'>
-                      <img src={item.image} />
-                    </div>
-                    <div className="info" >
-                      <div className="name">
-                        { item.count }
+          <div className="itemscontainer">
+            <div className="items cart">
+            {
+                Object.keys(cart).map((item, i)=>{
+                  item = cart[item];
+                  return (
+                    <div className="item" key={i} >
+                      <div className='image'>
+                        <img src={item.image} />
                       </div>
-                      <div className="price">
-                        { ( item.count * item.price ) } $
+                      <div className="info" >
+                        <div className="name">
+                          { item.count }
+                        </div>
+                        <div className="price">
+                          { ( item.count * item.price ) } $
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )
-              })
-            }
+                  )
+                })
+              }
+            </div>
           </div>
           <div className="order-btn" onClick={order}>
             Order
@@ -373,9 +382,64 @@ const Dashboard  = (props={
 }
 
 const NewUser = (props) =>{
+  let [newuser, newuserState] = React.useState({
+    name:"Username",
+    phone:"User Phone Number",
+    email:"Email"
+  })
+  let { image, userState, imageState, compState } = props;
+
+  function addUser(){
+    POST({
+      path:'newuser',
+      data:{
+        user:newuser,
+        photo:image,
+      }
+    }).then(response=>response.json()).then(data=>{
+      userState(data.user)
+      compState("dashboard")
+    })
+  }
+
+  function cancel(){
+    userState({})
+    imageState(undefined)
+    compState("camera")
+  }
+
   return (
     <div className="new-user">
-
+      <div className="photo">
+        <img src={image} alt="user.png" />
+      </div>
+      <div className="form">
+        {
+          Object.keys(newuser,).map((field, i)=>{
+            return (
+              <div className="input" key={i}>
+                <div className="name">
+                  { field }
+                </div>
+                <div className="field">
+                  <input  defaultValue={newuser[field]} onChange={e=>{
+                    newuser[field] = e.target.value;
+                    newuserState({
+                      ...newuser
+                    })
+                  }} />
+                </div>
+              </div>
+            )
+          })
+        }
+        <button onClick={addUser}>
+          Add
+        </button>
+        <button onClick={cancel}>
+          Cancel
+        </button>
+      </div>
     </div>
   )
 }
@@ -420,6 +484,7 @@ const App = (props) => {
             image={image} 
             imageState={imageState} 
             compState={compState} 
+            userState={userState}
           />
         </div>
       ) 

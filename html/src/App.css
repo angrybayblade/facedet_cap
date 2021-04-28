@@ -249,19 +249,27 @@
   letter-spacing: 2px;
   font-weight: 600;
 }
-.new-order .items {
+
+.new-order .itemscontainer {
   height: 45vh;
   width: 100%;
-
-  padding: 10px;
   border-top: var(--border);
   border-bottom: var(--border);
+
+  padding: 10px 7px 10px 10px;
+}
+
+.new-order .items {
+  height: 100%;
+  width: 100%;
 
   grid-gap: 10px;
 
   display: grid;
   grid-template-columns: repeat( auto-fill, minmax(160px, 1fr) );
   overflow-y: scroll;
+
+  padding-right: 10px;
 }
 
 .items .item {
@@ -370,7 +378,7 @@
   letter-spacing: 1px;
 }
 
-.order-id button {
+button {
   border: var(--border);
   padding: 5px 10px;
   font-weight: 600;
@@ -379,4 +387,77 @@
 
   font-family: monospace;
   cursor: pointer;
+}
+
+
+/* New User */
+
+.new-user {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  height: 450px;
+  width: 300px;
+
+  position: absolute;
+  top: 50%;
+  left: 50%;
+
+  transform: translate(-50%, -50%);
+
+  background: var(--pbg);
+  border: var(--border);
+
+  border-radius: 2px;
+}
+
+.new-user .photo {
+  height: 148px;
+  width: 148px;
+
+  display: grid;
+  place-items: center;
+}
+
+.new-user .form{
+  display: flex;
+  flex-direction: column;
+  padding: 5px 5px 7px 5px;
+}
+
+.form .input {
+  height: 60px;
+  padding: 5px;
+  margin-bottom: 5px;
+}
+
+.form button {
+  margin-top: 5px;
+}
+
+.form .input .name {
+  font-weight: 400;
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: capitalize;
+}
+
+.form input {
+  border: none;
+  border-bottom: var(--border);
+  background: none;
+  font-weight: 400;
+  font-size: 13px;
+  letter-spacing: 2px;
+
+  margin-top: 10px;
+  padding-bottom: 7px;
+  padding-left: 5px;
+}
+
+input:focus {
+  border-bottom: 1px solid #333;
+  outline: none;
 }

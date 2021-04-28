@@ -1,5 +1,5 @@
 import json
-from typing import List, Tuple
+from typing import Any, List, Tuple
 import numpy as np
 
 from json import load, dump
@@ -65,7 +65,7 @@ class FaceDB(object):
         self._faces = pathlib.join(self.root, "face.npy" )
 
         if not pathlib.isfile(self._users):
-            np.save(self._faces, np.array( [[EMBEDDING_DIM]*VECTOR_SIZE] ))
+            np.save(self._faces, np.array( [[EMBEDDING_DIM*2]*VECTOR_SIZE] ))
             np.save(self._users, np.array([ 'unidentified' ]))
 
         self.users = np.load(self._users)
@@ -108,7 +108,7 @@ class Databse(object):
 
         self.facedb = FaceDB(self.root)
 
-    def __add__(self, user:dict):
+    def __add__(self, user:dict)->User:
         idx,*_ = user['email'].split("@")
         embedding = user.pop("embedding")
 
@@ -118,10 +118,6 @@ class Databse(object):
 
     def __getitem__(self,idx:str)->User:
         return User(self.users, idx)
-
-    def validate(self, embedding:np.ndarray):
-        idx, score = self.facedb[embedding]
-        return self[idx].json(), score
 
     @property
     def new_order_id(self,):
@@ -133,8 +129,14 @@ class Databse(object):
         
         return order_id
 
+    def validate(self, embedding:np.ndarray):
+        idx, score = self.facedb[embedding]
+        if idx == 'unidentified' or score < 0.9 or score > 1:
+            return False, score
+        return self[idx].json(), score
+
     def update_order_history(self,user:dict, cart:dict)->int:
-        cars = list(cart.values())
+        cart = list(cart.values())
         if len(cart):
             idx,*_ = user['email'].split("@")
             date = dt.now().strftime("%d/%m/%y")
@@ -154,16 +156,7 @@ def new_user(
     phone:str, 
     email:str, 
     embedding:np.ndarray,
-    history:list=[{
-        "date":"1/1/21",
-        "id":"".join( np.random.randint(0, 64, 6).astype(str)), 
-        "orders":[
-            {
-                "name":"Burger",
-                "price":"10$"
-            }
-        ]
-    }]):
+    history:list=[]):
     return {
         "name":name,
         "phone":phone,

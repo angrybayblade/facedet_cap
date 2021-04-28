@@ -2,11 +2,12 @@ import cv2
 import base64
 
 import numpy as np
-# import tensorflow as tf
+import tensorflow as tf
 
 from flask import Flask, request
 from flask_cors import CORS
 from numpy.core.fromnumeric import size
+from json import dumps
 
 from db import Databse, FaceDB, User, new_user, new_user_random
 
@@ -14,14 +15,19 @@ app = Flask(__name__)
 db = Databse(root='./data/userdb')
 haar = cv2.CascadeClassifier()
 
-# db + new_user_random()
+class LargeTanH(tf.keras.layers.Layer):
+    def call(self,x):
+        x = tf.math.tanh(x)
+        x = tf.multiply(x, 64)
+        return x
 
+model = tf.keras.models.load_model('./notebooks/model/')
 haar.load("./data/haarcascade_frontalface_default.xml")
 CORS(app)
 
 def get_face ( image:np.ndarray, pad:int=15 )->np.ndarray:
-    *_,(x,y,w,h) = haar.detectMultiScale(image)
-    roi =  image[y-pad:y+h, x:x+w].copy()
+    (x,y,w,h), *_ = haar.detectMultiScale(image)
+    roi =  image[y:y+h, x:x+w].copy()
     roi = cv2.resize(roi,(128, 128), interpolation= cv2.INTER_AREA)
     return roi
 
@@ -47,9 +53,11 @@ def detect():
     image = data['image']
     image = decode_image(image,)
     roi = get_face(image,)
-    
-    user, score = db.validate(np.random.uniform(0,1, size=(64)))
+
+    embedding = model.predict(roi.mean(axis=-1).reshape(1,128,128,1)) #np.random.uniform(0,1, size=(64))
+    user, score = db.validate(embedding)
     roi_string = encode_image(roi)
+    print ('Score : ', score)
     return {
         'roi':roi_string,
         'user':user
@@ -63,9 +71,26 @@ def order():
         'id':order_id,
     }
 
+@app.route("/newuser", methods=['GET','POST'])
+def newuser():
+    data = request.get_json()
+    
+    user = data['user']
+    image = data['photo']
+    image = decode_image(image).mean(axis=-1)
+    embedding = model.predict(image.reshape(1,128,128,1))
+
+    user.update({
+        "embedding":embedding
+    })
+    user = db + new_user(**user)
+    return {
+        "user":user.json()
+    }
+
 if __name__ == '__main__':
     app.run(
         host='localhost',
         port=8080,
-        debug=True
+        # debug=True
     )
