@@ -15,12 +15,6 @@ app = Flask(__name__)
 db = Databse(root='./data/userdb')
 haar = cv2.CascadeClassifier()
 
-class LargeTanH(tf.keras.layers.Layer):
-    def call(self,x):
-        x = tf.math.tanh(x)
-        x = tf.multiply(x, 64)
-        return x
-
 model = tf.keras.models.load_model('./notebooks/model/')
 haar.load("./data/haarcascade_frontalface_default.xml")
 CORS(app)
@@ -54,7 +48,7 @@ def detect():
     image = decode_image(image,)
     roi = get_face(image,)
 
-    embedding = model.predict(roi.mean(axis=-1).reshape(1,128,128,1)) #np.random.uniform(0,1, size=(64))
+    embedding = model.predict(roi.reshape(1,128,128,3)) 
     user, score = db.validate(embedding)
     roi_string = encode_image(roi)
     print ('Score : ', score)
@@ -77,8 +71,8 @@ def newuser():
     
     user = data['user']
     image = data['photo']
-    image = decode_image(image).mean(axis=-1)
-    embedding = model.predict(image.reshape(1,128,128,1))
+    image = decode_image(image)
+    embedding = model.predict(image.reshape(1,128,128,3))
 
     user.update({
         "embedding":embedding

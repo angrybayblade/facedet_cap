@@ -323,7 +323,11 @@
   width: 100%;
 }
 
-.new-order .order-btn {
+.new-order .order-btns {
+  display: flex; 
+}
+
+.order-btns .btn {
   display: grid;
   place-items: center;
   height: 5vh;
@@ -332,8 +336,14 @@
   font-weight: 500;
   font-size: 14px;
 
+  width: 50%;
+
   background: #e5e5e5;
   cursor: pointer;
+}
+
+.order-btns .btn:nth-child(1){
+  border-right: var(--border);
 }
 
 .order-btn:hover{

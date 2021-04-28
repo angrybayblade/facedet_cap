@@ -10,8 +10,6 @@ from numpy import random
 from datetime import datetime as dt
 
 VECTOR_SIZE = 64
-EMBEDDING_DIM = 64
-MAX_DISTANCE = np.sqrt(np.square(np.array([ EMBEDDING_DIM ]*VECTOR_SIZE) - np.zeros((VECTOR_SIZE, ))).mean())
 
 class User(object):
     
@@ -65,7 +63,7 @@ class FaceDB(object):
         self._faces = pathlib.join(self.root, "face.npy" )
 
         if not pathlib.isfile(self._users):
-            np.save(self._faces, np.array( [[EMBEDDING_DIM*2]*VECTOR_SIZE] ))
+            np.save(self._faces, np.array( [[ 128 ]*VECTOR_SIZE] ))
             np.save(self._users, np.array([ 'unidentified' ]))
 
         self.users = np.load(self._users)
@@ -79,8 +77,7 @@ class FaceDB(object):
 
     def __getitem__(self, embedding:np.ndarray)->Tuple[ str, int ]:
         scores = np.sqrt(np.square(self.faces - embedding).mean(axis=-1))
-        score = scores.min()
-        score = 1 - ( score / MAX_DISTANCE )
+        score = 1 - scores.min()
         idx = scores.argmin()
         idx = self.users[idx]
         return idx, score
@@ -131,7 +128,7 @@ class Databse(object):
 
     def validate(self, embedding:np.ndarray):
         idx, score = self.facedb[embedding]
-        if idx == 'unidentified' or score < 0.9 or score > 1:
+        if idx == 'unidentified' or score < 0.8 or score > 1:
             return False, score
         return self[idx].json(), score
 

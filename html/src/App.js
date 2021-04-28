@@ -328,9 +328,14 @@ const Dashboard  = (props={
                 })
               }
             </div>
-          </div>
-          <div className="order-btn" onClick={order}>
-            Order
+          </div> 
+          <div className='order-btns'>
+            <div className="btn" onClick={order}>
+              Order
+            </div>
+            <div className="btn" onClick={goBack}>
+              Cancel
+            </div>
           </div>
         </div>
         <div className="history">
