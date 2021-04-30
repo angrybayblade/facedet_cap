@@ -1,22 +1,23 @@
 import cv2
 import base64
+from flask.helpers import send_file
 
 import numpy as np
 import tensorflow as tf
 
-from flask import Flask, request
+from flask import Flask, request, render_template
 from flask_cors import CORS
 from numpy.core.fromnumeric import size
-from json import dumps
 
-from db import Databse, FaceDB, User, new_user, new_user_random
+from db import Databse, new_user
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='./templates')
 db = Databse(root='./data/userdb')
 haar = cv2.CascadeClassifier()
 
-model = tf.keras.models.load_model('./notebooks/model/')
+model = tf.keras.models.load_model("./notebooks/model/")
 haar.load("./data/haarcascade_frontalface_default.xml")
+
 CORS(app)
 
 def get_face ( image:np.ndarray, pad:int=15 )->np.ndarray:
@@ -39,7 +40,11 @@ def encode_image(image:np.ndarray)->str:
 
 @app.route("/")
 def index():
-    return 'Hello, World !'
+    return render_template("index.html")
+
+@app.route("/static/<string:_type>/<string:_file>")
+def serve_static(_type, _file):
+    return send_file(f"templates\\static\\{_type}\\{_file}")
 
 @app.route("/validate", methods=['GET', 'POST'])
 def detect():
